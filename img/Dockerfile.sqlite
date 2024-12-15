@@ -13,7 +13,7 @@ RUN set -eux \
     && curl -o Northwind_small.sqlite -L 'https://github.com/jpwhite3/northwind-SQLite3/raw/master/Northwind_small.sqlite' \
     && rm -rf /var/lib/apt/lists/* \
     && echo '.mode table' >> .sqliterc \
-    && echo '.open Northwind_small.sqlite' >> .sqliterc \
+    && echo '.open Northwind_small.sqlite' >> .sqliterc
 
 USER user01
 WORKDIR /home/user01/
