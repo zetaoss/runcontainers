@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   docker-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       DEBIAN_TAG: 12.8-slim
       NOTEBOOK_TAG: 2024-12-09
