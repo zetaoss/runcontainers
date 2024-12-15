@@ -47,20 +47,13 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata (tags, labels) for Docker
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        tags: "type=ref,event=tag"
-
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
         context: .
         file: img/Dockerfile.${{ matrix.lang }}
         push: true
-        tags: ghcr.io/zetaoss/runcontainers/${{ matrix.lang }}:rc
-        labels: ${{ steps.meta.outputs.labels }}
+        tags: zetaoss/runcontainers/${{ matrix.lang }}:rc,zetaoss/runcontainers/${{ matrix.lang }}-0.0.0
         build-args: |
             DEBIAN_TAG=${{ env.DEBIAN_TAG }}
             NOTEBOOK_TAG=${{ env.NOTEBOOK_TAG }}
