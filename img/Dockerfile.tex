@@ -1,0 +1,14 @@
+FROM texlive/texlive
+RUN set -eux \
+    && useradd -m -d /home/user01 user01 \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    ghostscript \
+    imagemagick \
+    time \
+    && rm -rf /var/lib/apt/lists/* \
+    && mv /etc/ImageMagick-7/policy.xml /etc/ImageMagick-7/policy.xmlout \
+    && tlmgr repository add https://ctan.org/tex-archive/systems/texlive/tlnet archive \
+    && tlmgr pinning add archive "*"
+
+USER user01
+WORKDIR /home/user01/

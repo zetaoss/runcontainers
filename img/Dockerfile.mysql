@@ -1,0 +1,22 @@
+FROM mysql:8
+
+ENV MYSQL_ALLOW_EMPTY_PASSWORD=1 \
+    PATH=/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+RUN set -eux \
+    && useradd -m -d /home/user01 user01 \
+    && microdnf install -y \
+    time \
+    && microdnf clean all \
+    && mysqld --initialize-insecure \
+    && mysqld --daemonize \
+    && while ! mysqladmin ping --silent; do sleep 1; done \
+    && curl https://raw.githubusercontent.com/harryho/db-samples/master/mysql/northwind.sql | sed 's|,PRIMARY KEY (orderId,custId)|,PRIMARY KEY (orderId,custId),UNIQUE (orderId)|' | mysql \
+    && mysql -e 'CREATE DATABASE wikipedia' \
+    && curl https://raw.githubusercontent.com/jmnote/z-dataset/master/wikipedia.org/join-sql.sql | mysql wikipedia \
+    && mysql -e 'CREATE DATABASE sample' \
+    && curl https://www.w3resource.com/sql/sample-database-of-sql-in-mysql-format.txt | mysql sample \
+    && chown -R user01:user01 /var/lib/mysql
+
+USER user01
+WORKDIR /home/user01/

@@ -1,0 +1,19 @@
+ARG DEBIAN_TAG=latest
+FROM debian:${DEBIAN_TAG}
+
+RUN set -eux \
+    && useradd -m -d /home/user01 user01 \
+    && echo 'deb http://ftp.debian.org/debian unstable main contrib non-free' > /etc/apt/sources.list.d/unstable.list \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    sqlite3 \
+    time \
+    && cd /home/user01/ \
+    && curl -o Northwind_small.sqlite -L 'https://github.com/jpwhite3/northwind-SQLite3/raw/master/Northwind_small.sqlite' \
+    && rm -rf /var/lib/apt/lists/* \
+    && echo '.mode table' >> .sqliterc \
+    && echo '.open Northwind_small.sqlite' >> .sqliterc \
+
+USER user01
+WORKDIR /home/user01/

@@ -1,0 +1,20 @@
+ARG NOTEBOOK_TAG=latest
+FROM quay.io/jupyter/r-notebook:${NOTEBOOK_TAG}
+
+ENV TF_CPP_MIN_LOG_LEVEL=2 \
+    PATH="~/.local/bin:${PATH}"
+
+RUN set -eux \
+    && pip install --no-cache --no-cache-dir \
+    BeautifulSoup4 \
+    girth \
+    matplotlib \
+    natsort \
+    numpy \
+    opendatasets \
+    pandas \
+    requests \
+    scikit-learn \
+    seaborn \
+    statsmodels \
+    tensorflow-cpu

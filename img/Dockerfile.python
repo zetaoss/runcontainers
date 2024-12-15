@@ -1,0 +1,41 @@
+FROM python:3.13-slim
+RUN set -eux \
+    && useradd -m -d /home/user01 user01 \
+    && apt-get update && apt-get install -y --no-install-recommends time \
+    && rm -rf /var/lib/apt/lists/* \ 
+    && env PIP_DISABLE_ROOT_WARNING=1 pip install --no-cache --no-cache-dir \
+    BeautifulSoup4 \
+    google_trans_new \
+    matplotlib \
+    natsort \
+    numpy \
+    opendatasets \
+    pandas \
+    pyyaml \
+    requests \
+    && echo "\
+from contextlib import nullcontext\n\
+from matplotlib.backend_bases import (_Backend, FigureManagerBase)\n\
+from matplotlib.backends.backend_agg import FigureCanvasAgg, RendererAgg\n\
+class FigureManagerNbAgg(FigureManagerBase):\n\
+    def show(self):\n\
+        self.canvas.draw()\n\
+class FigureCanvasNbAgg(FigureCanvasAgg):\n\
+    n = 0\n\
+    def draw(self):\n\
+        self.n += 1\n\
+        self.renderer = self.get_renderer(cleared=True)\n\
+        with RendererAgg.lock, (self.toolbar._wait_cursor_for_draw_cm() if self.toolbar else nullcontext()):\n\
+            self.figure.draw(self.renderer)\n\
+            super().draw()\n\
+            self.print_png('plot'+str(self.n)+'.png')\n\
+@_Backend.export\n\
+class _BackendNbAgg(_Backend):\n\
+    FigureCanvas = FigureCanvasNbAgg\n\
+    FigureManager = FigureManagerNbAgg" > /usr/local/lib/python3.13/site-packages/matplotlib/backends/backend_nbagg.py \
+    && sed 's/#backend: .*/backend: NbAgg/'              -i /usr/local/lib/python3.13/site-packages/matplotlib/mpl-data/matplotlibrc \
+    && sed 's/#figure.figsize: .*/figure.figsize: 4, 4/' -i /usr/local/lib/python3.13/site-packages/matplotlib/mpl-data/matplotlibrc
+
+ENV TF_CPP_MIN_LOG_LEVEL=2
+USER user01
+WORKDIR /home/user01/

@@ -1,0 +1,47 @@
+ARG NOTEBOOK_TAG=latest
+FROM quay.io/jupyter/r-notebook:${NOTEBOOK_TAG}
+
+USER root
+
+RUN set -eux \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    fonts-nanum-coding \
+    && rm -rf /var/lib/apt/lists/*
+
+USER ${NB_UID}
+
+RUN mamba install --yes \
+    r-catools \
+    r-cluster \
+    r-clustergeneration \
+    r-dplyr \
+    r-epi \
+    r-ggally \
+    r-ggplot2 \
+    r-glmnet \
+    r-hash \
+    r-here \
+    r-lattice \
+    r-leaps \
+    r-lmtest \
+    r-lubridate \
+    r-mass \
+    r-metrics \
+    r-mlbench \
+    r-nnet \
+    r-party \
+    r-partykit \
+    r-plotly \
+    r-psych \
+    r-readxl \
+    r-reshape \
+    r-rocr \
+    r-rpart \
+    r-rvest \
+    r-sampling \
+    r-scatterplot3d \
+    r-sqldf \
+    r-tm \
+    && mamba clean --all -f -y \
+    && fix-permissions "${CONDA_DIR}" \
+    && fix-permissions "/home/${NB_USER}"
