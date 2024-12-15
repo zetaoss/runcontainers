@@ -52,6 +52,11 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         tags: "type=ref,event=tag"
+        custom-tags: |
+          dummy-0.0.0
+
+    - name: Log metadata for debugging
+      run: echo "Tags: ${{ steps.meta.outputs.tags }}"
 
     - name: Build and push
       uses: docker/build-push-action@v6
