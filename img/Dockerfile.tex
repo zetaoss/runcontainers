@@ -1,6 +1,7 @@
 ARG NOTEBOOK_TAG=latest
 FROM quay.io/jupyter/minimal-notebook:${NOTEBOOK_TAG}
 
+USER root
 RUN set -eux \
     && useradd -m -d /home/user01 user01 \
     && apt-get update && apt-get install -y --no-install-recommends \
