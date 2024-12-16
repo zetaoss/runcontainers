@@ -65,6 +65,6 @@ jobs:
 
     - uses: actions/delete-package-versions@v5
       with: 
-        package-name: ghcr.io/zetaoss/runcontainers/${{ matrix.lang }}
+        package-name: runcontainers/${{ matrix.lang }}
         package-type: 'container'
         delete-only-untagged-versions: 'true'
