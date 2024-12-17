@@ -57,7 +57,7 @@ jobs:
         context: .
         file: img/Dockerfile.${{ matrix.lang }}
         push: true
-        tags: ghcr.io/zetaoss/runcontainers/${{ matrix.lang }}:rc
+        tags: ghcr.io/zetaoss/runcontainers/${{ matrix.lang }}:latest
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
           DEBIAN_TAG=${{ env.DEBIAN_TAG }}
