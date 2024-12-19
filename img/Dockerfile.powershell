@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/powershell:debian-12
 
 RUN set -eux \
-    useradd -m -d /home/user01 user01 \
+    && useradd -m -d /home/user01 user01 \
     && apt-get update && apt-get install -y --no-install-recommends \
     time \
     && rm -rf /var/lib/apt/lists/*
