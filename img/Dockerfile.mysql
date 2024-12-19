@@ -17,7 +17,7 @@ RUN set -eux \
     && mysql -e 'CREATE DATABASE sample' \
     && curl https://www.w3resource.com/sql/sample-database-of-sql-in-mysql-format.txt | mysql sample \
     && chown -R user01:user01 /var/run/mysqld/ \
-    && chown -R a+rw /var/run/mysqld/ \
+    && chmod -R a+rw /var/run/mysqld/ \
     && echo 'docker-entrypoint.sh mysqld > /dev/null 2>&1 &' >> /tmp/entrypoint.sh \
     && echo 'while ! mysqladmin ping --silent; do sleep 1; done' >> /tmp/entrypoint.sh
 
