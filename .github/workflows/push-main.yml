@@ -24,6 +24,7 @@ jobs:
           - go
           - java
           - kotlin
+          - lua
           - mysql
           - perl
           - php
