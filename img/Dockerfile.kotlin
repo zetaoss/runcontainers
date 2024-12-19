@@ -1,24 +1,14 @@
+# main
 FROM gradle:jdk21
 
-RUN useradd -m -d /home/user01 user01 \
+RUN set -eux \
+    && useradd -m -d /home/user01 user01 \
     && mkdir /demo \
-    && chown -R user01:user01 /demo
+    && chown -R user01:user01 /demo \
+    && curl -LO https://github.com/JetBrains/kotlin/releases/download/v2.1.0/kotlin-compiler-2.1.0.zip \
+    && unzip kotlin-compiler-2.1.0.zip -d /opt/ \
+    && rm -f kotlin-compiler-2.1.0.zip
 
+ENV PATH=$PATH:/opt/kotlinc/bin
 USER user01
 WORKDIR /demo
-
-RUN set -x \
-    && gradle init \
-    --package demo \
-    --type kotlin-application \
-    --java-version 21 \
-    --project-name demo \
-    --no-split-project \
-    --dsl kotlin \
-    --test-framework kotlintest \
-    --no-incubating \
-    && cat /demo/app/src/main/kotlin/demo/App.kt \
-    && ./gradlew run \
-    && printf "package demo\nfun main() {println(\"Hello, 世界\")}\n" | tee /demo/app/src/main/kotlin/demo/App.kt \
-    && cat /demo/app/src/main/kotlin/demo/App.kt \
-    && ./gradlew run
