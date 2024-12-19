@@ -19,7 +19,8 @@ RUN set -eux \
     && chown -R user01:user01 /var/run/mysqld/ /var/lib/mysql \
     && chmod -R a+rw /var/run/mysqld/ \
     && echo 'docker-entrypoint.sh mysqld > /tmp/log.txt 2>&1 &' >> /tmp/entrypoint.sh \
-    && echo 'while ! mysqladmin ping --silent; do sleep 1; done' >> /tmp/entrypoint.sh
+    && echo 'while ! mysqladmin ping --silent; do sleep 1; done' >> /tmp/entrypoint.sh \
+    && echo 'mysql wikipedia -t -uroot < runbox.sql' >> /tmp/entrypoint.sh
 
 USER user01
 WORKDIR /home/user01/
