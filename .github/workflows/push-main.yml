@@ -34,7 +34,7 @@ jobs:
           - r
           - r-notebook
           - ruby
-          - sqlite
+          - sqlite3
           - swift
           - tex
 
