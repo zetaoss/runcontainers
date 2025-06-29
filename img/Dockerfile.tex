@@ -12,7 +12,7 @@ FROM texlive/texlive:latest-minimal
 # kotex-oblivoir (memoir)
 
 RUN set -eux \
-    && tlmgr option repository http://mirror.ctan.org/systems/texlive/tlnet \
+    && tlmgr option repository https://kr.mirrors.cicku.me/ctan/systems/texlive/tlnet \
     && tlmgr install \
       beamer \
       kotex-oblivoir
