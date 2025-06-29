@@ -20,6 +20,8 @@ FROM texlive/texlive:latest-small
 # $ docker run -it --rm texlive/texlive:latest-small sh -c 'tlmgr option repository https://mirror.navercorp.com/CTAN/systems/texlive/tlnet; tlmgr info pgf'      | grep installed:
 # installed:   Yes
 # $ docker run -it --rm texlive/texlive:latest-small sh -c 'tlmgr option repository https://mirror.navercorp.com/CTAN/systems/texlive/tlnet; tlmgr info kotex-oblivoir' | grep installed:
+# $ docker run -it --rm texlive/texlive:latest-small sh -c 'tlmgr option repository https://mirror.navercorp.com/CTAN/systems/texlive/tlnet; tlmgr info kotex-plain'    | grep installed:
+# $ docker run -it --rm texlive/texlive:latest-small sh -c 'tlmgr option repository https://mirror.navercorp.com/CTAN/systems/texlive/tlnet; tlmgr info nanumtype1'     | grep installed:
 # installed:   No
 
 RUN set -eux \
@@ -28,7 +30,8 @@ RUN set -eux \
     && tlmgr option repository https://mirror.navercorp.com/CTAN/systems/texlive/tlnet \
     && tlmgr install \
       kotex-oblivoir \
-      kotex-plain
+      kotex-plain \
+      nanumtype1
 
 USER root
 RUN set -eux \
