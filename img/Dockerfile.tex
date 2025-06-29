@@ -1,0 +1,46 @@
+#### images
+# texlive/texlive:latest-minimal # 886MB
+# texlive/texlive:latest-small   # 1.08GB
+
+FROM texlive/texlive:latest-small
+
+#### mirrors
+# http://mirror.ctan.org/systems/texlive/tlnet
+# (O) https://kr.mirrors.cicku.me/ctan/systems/texlive/tlnet
+# (O) https://mirror.navercorp.com/CTAN/systems/texlive/tlnet
+# (O) https://lab.uklee.pe.kr/tex-archive/systems/texlive/tlnet
+# (X) https://ftp.kaist.ac.kr/tex-archive/systems/texlive/tlnet
+# (X) https://mirror.kakao.com/CTAN/systems/texlive/tlnet
+
+# $ docker run -it --rm texlive/texlive:latest-small pdflatex --version | head -1
+# pdfTeX 3.141592653-2.6-1.40.28 (TeX Live 2025)
+# $ docker run -it --rm texlive/texlive:latest-small sh -c 'tlmgr option repository https://mirror.navercorp.com/CTAN/systems/texlive/tlnet; tlmgr info beamer'   | grep installed:
+# $ docker run -it --rm texlive/texlive:latest-small sh -c 'tlmgr option repository https://mirror.navercorp.com/CTAN/systems/texlive/tlnet; tlmgr info geometry' | grep installed:
+# $ docker run -it --rm texlive/texlive:latest-small sh -c 'tlmgr option repository https://mirror.navercorp.com/CTAN/systems/texlive/tlnet; tlmgr info memoir'   | grep installed:
+# $ docker run -it --rm texlive/texlive:latest-small sh -c 'tlmgr option repository https://mirror.navercorp.com/CTAN/systems/texlive/tlnet; tlmgr info pgf'      | grep installed:
+# installed:   Yes
+# $ docker run -it --rm texlive/texlive:latest-small sh -c 'tlmgr option repository https://mirror.navercorp.com/CTAN/systems/texlive/tlnet; tlmgr info kotex-oblivoir' | grep installed:
+# $ docker run -it --rm texlive/texlive:latest-small sh -c 'tlmgr option repository https://mirror.navercorp.com/CTAN/systems/texlive/tlnet; tlmgr info kotex-plain'    | grep installed:
+# $ docker run -it --rm texlive/texlive:latest-small sh -c 'tlmgr option repository https://mirror.navercorp.com/CTAN/systems/texlive/tlnet; tlmgr info nanumtype1'     | grep installed:
+# installed:   No
+
+RUN set -eux \
+    && pdflatex --version \
+    && tlmgr version \
+    && tlmgr option repository https://mirror.navercorp.com/CTAN/systems/texlive/tlnet \
+    && tlmgr install \
+      kotex-oblivoir \
+      kotex-plain \
+      nanumtype1
+
+USER root
+RUN set -eux \
+    && useradd -m -d /home/user01 user01 \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    ghostscript \
+    imagemagick \
+    && rm -rf /var/lib/apt/lists/* \
+    && mv /etc/ImageMagick-7/policy.xml /etc/ImageMagick-7/policy.xmlout
+
+USER user01
+WORKDIR /home/user01/
