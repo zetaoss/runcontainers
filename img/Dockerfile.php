@@ -1,4 +1,4 @@
-FROM composer as builder
+FROM composer AS builder
 RUN set -eux \
     && composer require \
     simplehtmldom/simplehtmldom:2.0-RC2 \
