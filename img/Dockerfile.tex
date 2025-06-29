@@ -1,5 +1,21 @@
-ARG NOTEBOOK_TAG=latest
-FROM quay.io/jupyter/minimal-notebook:${NOTEBOOK_TAG}
+FROM texlive/texlive:latest-minimal
+
+#### mirrors
+# http://mirror.ctan.org/systems/texlive/tlnet
+# https://kr.mirrors.cicku.me/ctan/systems/texlive/tlnet
+# https://lab.uklee.pe.kr/tex-archive/systems/texlive/tlnet
+# https://mirror.kakao.com/CTAN/systems/texlive/tlnet
+# https://mirror.navercorp.com/CTAN/systems/texlive/tlnet
+
+#### packages
+# beamer (geometry, pgf)
+# kotex-oblivoir (memoir)
+
+RUN set -eux \
+    && tlmgr option repository http://mirror.ctan.org/systems/texlive/tlnet \
+    && tlmgr install \
+      beamer \
+      kotex-oblivoir
 
 USER root
 RUN set -eux \
@@ -8,7 +24,7 @@ RUN set -eux \
     ghostscript \
     imagemagick \
     && rm -rf /var/lib/apt/lists/* \
-    && mv /etc/ImageMagick-6/policy.xml /etc/ImageMagick-6/policy.xmlout
+    && mv /etc/ImageMagick-7/policy.xml /etc/ImageMagick-7/policy.xmlout
 
 USER user01
 WORKDIR /home/user01/
