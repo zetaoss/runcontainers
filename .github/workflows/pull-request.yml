@@ -1,0 +1,54 @@
+name: push-request
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-24.04
+    env:
+      DEBIAN_TAG: 12.8-slim
+      NOTEBOOK_TAG: 2024-12-09
+    strategy:
+      matrix:
+        lang:
+          - bash
+          - c
+          - cpp
+          - csharp
+          - go
+          - java
+          - kotlin
+          - latex
+          - lua
+          - mysql
+          - perl
+          - php
+          - powershell
+          - python
+          - python-notebook
+          - r
+          - r-notebook
+          - ruby
+          - sqlite3
+          - swift
+          - tex
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@v5
+
+    - name: Build
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: img/Dockerfile.${{ matrix.lang }}
+        push: false
+        tags: ghcr.io/zetaoss/runcontainers/${{ matrix.lang }}:latest
+        labels: ${{ steps.meta.outputs.labels }}
+        build-args: |
+          DEBIAN_TAG=${{ env.DEBIAN_TAG }}
+          NOTEBOOK_TAG=${{ env.NOTEBOOK_TAG }}

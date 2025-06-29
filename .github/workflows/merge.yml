@@ -1,4 +1,4 @@
-name: push-main
+name: merge
 on:
   push:
     branches:
@@ -24,6 +24,7 @@ jobs:
           - go
           - java
           - kotlin
+          - latex
           - lua
           - mysql
           - perl
