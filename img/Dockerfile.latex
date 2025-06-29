@@ -26,10 +26,6 @@ FROM texlive/texlive:latest-small
 
 RUN set -eux \
     && pdflatex --version \
-    && tlmgr info \
-      kotex-oblivoir \
-      kotex-plain \
-      nanumtype1 \
     && tlmgr option repository https://mirror.navercorp.com/CTAN/systems/texlive/tlnet \
     && tlmgr install \
       kotex-oblivoir \
