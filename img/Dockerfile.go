@@ -19,6 +19,7 @@ RUN set -x \
     && go get gorm.io/gorm \
     && go get gorm.io/gorm/clause \
     && go get gorm.io/driver/sqlite \
+    && go get k8s.io/klog/v2 \
     && echo 'package main; import "fmt"; func main() { fmt.Println("Hello, 世界") }' > main.go \
     && go mod tidy \
     && go run . \
