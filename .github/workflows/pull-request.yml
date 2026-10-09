@@ -30,7 +30,7 @@ jobs:
         BASE: origin/${{ github.base_ref }}
       run: echo "matrix=$(.github/plan.sh)" >> "$GITHUB_OUTPUT"
 
-  # Builds what merging would push: tags.yaml entries whose tag is not in the registry yet.
+  # Builds what merging would push: release.yaml images at releaseDate that are not in the registry yet.
   docker-build:
     needs: plan
     if: needs.plan.outputs.matrix != '[]'
