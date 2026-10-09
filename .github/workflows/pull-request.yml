@@ -1,40 +1,40 @@
-name: push-request
+name: pull-request
 on:
   pull_request:
     types: [opened, reopened, synchronize]
 
+permissions:
+  contents: read
+  packages: read
+
+env:
+  DEBIAN_TAG: 12.8-slim
+  NOTEBOOK_TAG: 2024-12-09
+
 jobs:
-  docker-build:
+  plan:
     runs-on: ubuntu-24.04
-    env:
-      DEBIAN_TAG: 12.8-slim
-      NOTEBOOK_TAG: 2024-12-09
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - id: plan
+      run: echo "matrix=$(.github/plan.sh)" >> "$GITHUB_OUTPUT"
+
+  # Builds what merging would push: tags.yaml entries whose tag is not in the registry yet.
+  docker-build:
+    needs: plan
+    if: needs.plan.outputs.matrix != '[]'
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        lang:
-          - bash
-          - c
-          - cpp
-          - csharp
-          - go
-          - java
-          - kotlin
-          - latex
-          - lua
-          - mysql
-          - perl
-          - php
-          - powershell
-          - python
-          - python-notebook
-          - r
-          - r-notebook
-          - ruby
-          - sqlite3
-          - swift
-          - tex
-
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
     - uses: actions/checkout@v4
 
@@ -48,7 +48,7 @@ jobs:
         context: .
         file: img/Dockerfile.${{ matrix.lang }}
         push: false
-        tags: ghcr.io/zetaoss/runcontainers/${{ matrix.lang }}:latest
+        tags: ghcr.io/zetaoss/runcontainers/${{ matrix.lang }}:${{ matrix.tag }}
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
           DEBIAN_TAG=${{ env.DEBIAN_TAG }}
