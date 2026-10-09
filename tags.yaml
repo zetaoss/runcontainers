@@ -1,4 +1,4 @@
-# Releases: <lang>: <YYYY-MM-DD>[.N]
+# Releases: <lang>: <YYYY-MM-DD> (KST), one release per image per day.
 # CI builds an entry only when ghcr.io/zetaoss/runcontainers/<lang>:<tag> does not exist yet,
 # and pushes it as <tag> and latest. Existing tags are never rebuilt. latex is also pushed as tex.
 bash: 2026-01-06

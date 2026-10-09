@@ -18,12 +18,16 @@ jobs:
       matrix: ${{ steps.plan.outputs.matrix }}
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - uses: docker/login-action@v3
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - id: plan
+      env:
+        BASE: origin/${{ github.base_ref }}
       run: echo "matrix=$(.github/plan.sh)" >> "$GITHUB_OUTPUT"
 
   # Builds what merging would push: tags.yaml entries whose tag is not in the registry yet.
