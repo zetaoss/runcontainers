@@ -2,17 +2,13 @@
 
 ## Release
 
-`release.yaml` lists the published tag of each image under `images` (dates in UTC), and CI keeps the
-registry matching it. To release, change Dockerfiles in `img/`, set `releaseDate` to today, and set
-those images' tags to `releaseDate`. One release per image per day.
+`tags.yaml` lists the published tag of each image (`<lang>: <YYYY-MM-DD>`, UTC). The latest date in the
+file is the release: to release, change Dockerfiles in `img/` and set those images to today's date.
 
-On merge to main, for each image whose tag is not in the registry yet:
+- On merge to main, images at the release date whose tag is not in the registry yet are built and pushed
+  as `ghcr.io/zetaoss/runcontainers/<lang>:<tag>` and `:latest` (`latex` also as `tex`).
+- Earlier entries are already published and are not touched. Tags are never rebuilt, so old tags stay
+  available for rollback.
+- Pull requests build the release and fail if a changed `img/Dockerfile.<lang>` is not in it.
 
-- tag is `releaseDate`: build and push `ghcr.io/zetaoss/runcontainers/<lang>:<tag>` and `:latest` (`latex` also as `tex`).
-- earlier tag: tag the current `latest` with it, only if `latest` was created that day; otherwise CI fails.
-
-Existing tags are never rebuilt, so old tags stay available for rollback. Pull requests build the
-images to release and fail if `releaseDate` is not within the last 7 days or if a changed
-`img/Dockerfile.<lang>` is not released with it.
-
-bob keeps a copy of `release.yaml` and runs these tags; copy it there and release bob to use new images.
+bob keeps a copy of `tags.yaml` and runs these tags; copy it there and release bob to use new images.

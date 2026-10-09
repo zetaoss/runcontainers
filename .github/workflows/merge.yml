@@ -26,8 +26,6 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - id: plan
-      env:
-        RETAG: "1"
       run: echo "matrix=$(.github/plan.sh)" >> "$GITHUB_OUTPUT"
 
   docker-push:
