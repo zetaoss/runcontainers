@@ -1,4 +1,4 @@
-FROM golang:1.23
+FROM golang:1.26
 
 RUN useradd -m -d /home/user01 user01 \
     && apt-get update && apt-get install -y --no-install-recommends \
