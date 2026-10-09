@@ -15,6 +15,7 @@ jobs:
       DEBIAN_TAG: 12.8-slim
       NOTEBOOK_TAG: 2024-12-09
     strategy:
+      fail-fast: false
       matrix:
         lang:
           - bash
