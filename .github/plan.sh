@@ -8,7 +8,7 @@ release=$(yq -r '[.[]] | sort | .[-1]' tags.yaml)
 [[ "$release" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || { echo "error: invalid date $release" >&2; exit 1; }
 failed=0
 if [[ -n "${BASE:-}" ]]; then
-  for lang in $(git diff --name-only "$BASE"...HEAD -- 'img/Dockerfile.*' | sed 's|^img/Dockerfile\.||'); do
+  for lang in $(git diff --name-only --diff-filter=d "$BASE"...HEAD -- 'img/Dockerfile.*' | sed 's|^img/Dockerfile\.||'); do
     if [[ "$(yq -r ".\"$lang\"" tags.yaml)" != "$release" ]]; then
       echo "error $lang: img/Dockerfile.$lang changed; set $lang to $release or a new date" >&2; failed=1
     fi
