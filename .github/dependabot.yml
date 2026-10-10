@@ -17,3 +17,10 @@ updates:
    groups:
      base-images:
        patterns: ["*"]
+   ignore:
+     # Odd Perl minor versions are development releases.
+     - dependency-name: "perl"
+       versions: ["5.45", "5.47", "5.49"]
+     # Stay on the MySQL LTS line (9.7); 26.x are innovation releases.
+     - dependency-name: "mysql"
+       versions: [">= 10"]

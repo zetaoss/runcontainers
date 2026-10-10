@@ -1,0 +1,6 @@
+ARG IMAGE
+FROM ${IMAGE}
+# bob: bash /tmp/entrypoint.sh (runs runbox.sql on the wikipedia database)
+# Each sample database has tables.
+RUN echo "SELECT COUNT(DISTINCT table_schema) FROM information_schema.tables WHERE table_schema IN ('northwind', 'wikipedia', 'sample');" > runbox.sql \
+    && bash /tmp/entrypoint.sh | tee /dev/stderr | grep -q '| *3 *|'
