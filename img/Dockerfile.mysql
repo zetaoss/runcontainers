@@ -1,4 +1,4 @@
-FROM mysql:8
+FROM mysql:9.7
 
 ENV MYSQL_ALLOW_EMPTY_PASSWORD=1 \
     PATH=/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -11,11 +11,11 @@ RUN set -eux \
     && mysqld --initialize-insecure \
     && mysqld --daemonize \
     && while ! mysqladmin ping --silent; do sleep 1; done \
-    && curl https://raw.githubusercontent.com/harryho/db-samples/master/mysql/northwind.sql | sed 's|,PRIMARY KEY (orderId,custId)|,PRIMARY KEY (orderId,custId),UNIQUE (orderId)|' | mysql \
+    && curl -fsSL https://raw.githubusercontent.com/harryho/db-samples/master/mysql/northwind.sql | sed 's|,PRIMARY KEY (orderId,custId)|,PRIMARY KEY (orderId,custId),UNIQUE (orderId)|' | mysql \
     && mysql -e 'CREATE DATABASE wikipedia' \
-    && curl https://raw.githubusercontent.com/jmnote/z-dataset/master/wikipedia.org/join-sql.sql | mysql wikipedia \
+    && curl -fsSL https://raw.githubusercontent.com/jmnote/z-dataset/master/wikipedia.org/join-sql.sql | mysql wikipedia \
     && mysql -e 'CREATE DATABASE sample' \
-    && curl https://www.w3resource.com/sql/sample-database-of-sql-in-mysql-format.txt | mysql sample \
+    && curl -fsSL https://www.w3resource.com/sql/sample-database-of-sql-in-mysql-format.txt | mysql sample \
     && chown -R user01:user01 /var/run/mysqld/ /var/lib/mysql \
     && chmod -R a+rw /var/run/mysqld/ \
     && echo 'docker-entrypoint.sh mysqld > /tmp/log.txt 2>&1 &' >> /tmp/entrypoint.sh \

@@ -1,0 +1,4 @@
+ARG IMAGE
+FROM ${IMAGE}
+# bob: bash /tmp/entrypoint.sh (runs runbox.sql on the wikipedia database)
+RUN echo "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name IN ('northwind', 'wikipedia', 'sample');" > runbox.sql && bash /tmp/entrypoint.sh | grep -q '| *3 *|'

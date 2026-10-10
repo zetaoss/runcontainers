@@ -1,4 +1,4 @@
-FROM swift:6.0-slim
+FROM swift:6.4-slim
 
 RUN set -eux \
     && useradd -m -d /home/user01 user01 \

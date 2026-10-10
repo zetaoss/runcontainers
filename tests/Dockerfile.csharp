@@ -1,0 +1,4 @@
+ARG IMAGE
+FROM ${IMAGE}
+# bob: mcs runbox.cs; mono runbox.exe
+RUN echo 'class A{static void Main(){System.Console.WriteLine("hi");}}' > runbox.cs && mcs runbox.cs && test "$(mono runbox.exe)" = hi
