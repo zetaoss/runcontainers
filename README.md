@@ -8,21 +8,16 @@ and GitHub release. Merges that leave `VERSION` alone go out with the next relea
 
 - patch: images change, but not as users see them (rebuild for security updates, base patch version, build fix).
 - minor: a change users see (language or base major/minor version, packages or data added or removed,
-  a new language, the `images.txt` format). Breaking changes are minor while in 0.x.
+  a new language). Breaking changes are minor while in 0.x.
 - No release when no image changes (CI, README, `tests/` only).
 
 The `release` workflow builds the images whose `img/Dockerfile.<lang>` or `tests/Dockerfile.<lang>` changed
 since the previous release and pushes them as `ghcr.io/zetaoss/runcontainers/<lang>:<version>` and `:latest`
 (`latex` also as `tex`), with build provenance (`gh attestation verify oci://<image> -R zetaoss/runcontainers`).
-Unchanged images get the new version tag on the same digest (no rebuild). The release gets `images.txt`,
-one image per line pinned by digest:
-
-```
-ghcr.io/zetaoss/runcontainers/bash:v0.2.0@sha256:...
-```
-
-Put `[rebuild]` in the pull request title to rebuild every image (e.g. for security updates). bob keeps a copy of `images.txt` and runs
-those digests; copy it there and release bob to use new images.
+Unchanged images get the new version tag on the same digest (no rebuild), so every release has all images:
+run `ghcr.io/zetaoss/runcontainers/<lang>:v<VERSION>`. Put `[rebuild]` in the pull request title to rebuild
+every image (e.g. for security updates). bob keeps the runcontainers version; set it there and release bob to
+use new images.
 
 ## Tests
 
