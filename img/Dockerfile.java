@@ -1,9 +1,9 @@
-FROM gradle:jdk21 AS gradle
+FROM gradle:9.8.1-jdk21-resolute AS gradle
 RUN set -eux \
     && useradd -m -d /home/user01 user01 \
     && apt-get update && apt-get install -y --no-install-recommends \
     asciinema \
-    fonts-nanum-coding \
+    fonts-nanum \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /demo/src /demo/bin \
     && cd /demo \

@@ -1,5 +1,5 @@
 # main
-FROM gradle:jdk21
+FROM gradle:9.8.1-jdk21-resolute
 
 RUN set -eux \
     && useradd -m -d /home/user01 user01 \

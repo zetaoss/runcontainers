@@ -1,5 +1,4 @@
-ARG NOTEBOOK_TAG=latest
-FROM quay.io/jupyter/minimal-notebook:${NOTEBOOK_TAG}
+FROM quay.io/jupyter/minimal-notebook:2024-12-09
 
 ENV TF_CPP_MIN_LOG_LEVEL=2 \
     PATH="~/.local/bin:${PATH}"

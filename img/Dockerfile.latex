@@ -2,6 +2,7 @@
 # texlive/texlive:latest-minimal # 886MB
 # texlive/texlive:latest-small   # 1.08GB
 
+# latest-small is the only small tag of the current TeX Live; TLyyyy-historic tags are full schemes.
 FROM texlive/texlive:latest-small
 
 #### mirrors
@@ -27,6 +28,7 @@ FROM texlive/texlive:latest-small
 RUN set -eux \
     && pdflatex --version \
     && tlmgr option repository https://mirror.navercorp.com/CTAN/systems/texlive/tlnet \
+    && tlmgr update --self \
     && tlmgr install \
       kotex-oblivoir \
       kotex-plain \

@@ -1,11 +1,10 @@
-ARG NOTEBOOK_TAG=latest
-FROM quay.io/jupyter/r-notebook:${NOTEBOOK_TAG}
+FROM quay.io/jupyter/r-notebook:2026-10-05
 
 USER root
 
 RUN set -eux \
     && apt-get update && apt-get install -y --no-install-recommends \
-    fonts-nanum-coding \
+    fonts-nanum \
     && rm -rf /var/lib/apt/lists/*
 
 USER ${NB_UID}

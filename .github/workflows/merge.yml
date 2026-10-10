@@ -9,10 +9,6 @@ permissions:
   contents: read
   packages: write
 
-env:
-  DEBIAN_TAG: 12.8-slim
-  NOTEBOOK_TAG: 2024-12-09
-
 jobs:
   plan:
     runs-on: ubuntu-24.04
@@ -64,9 +60,6 @@ jobs:
           ${{ matrix.lang == 'latex' && format('ghcr.io/zetaoss/runcontainers/tex:{0}', matrix.tag) || '' }}
           ${{ matrix.lang == 'latex' && 'ghcr.io/zetaoss/runcontainers/tex:latest' || '' }}
         labels: ${{ steps.meta.outputs.labels }}
-        build-args: |
-          DEBIAN_TAG=${{ env.DEBIAN_TAG }}
-          NOTEBOOK_TAG=${{ env.NOTEBOOK_TAG }}
 
     - uses: actions/delete-package-versions@v5
       with:

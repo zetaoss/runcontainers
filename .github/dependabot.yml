@@ -10,3 +10,10 @@ updates:
    directory: "/"
    schedule:
      interval: weekly
+ - package-ecosystem: "docker"
+   directory: "/img"
+   schedule:
+     interval: weekly
+   groups:
+     base-images:
+       patterns: ["*"]
