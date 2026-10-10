@@ -1,6 +1,5 @@
 # main
-ARG DEBIAN_TAG=latest
-FROM debian:${DEBIAN_TAG}
+FROM debian:12.8-slim
 
 RUN useradd -m -d /home/user01 user01 \
     && apt-get update && apt-get install -y --no-install-recommends \

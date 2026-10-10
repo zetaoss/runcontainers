@@ -1,5 +1,4 @@
-ARG DEBIAN_TAG=latest
-FROM debian:${DEBIAN_TAG}
+FROM debian:12.8-slim
 
 RUN set -eux \
     && useradd -m -d /home/user01 user01 \

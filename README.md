@@ -12,3 +12,10 @@ file is the release: to release, change Dockerfiles in `img/` and set those imag
 - Pull requests build the release and fail if a changed `img/Dockerfile.<lang>` is not in it.
 
 bob keeps a copy of `tags.yaml` and runs these tags; copy it there and release bob to use new images.
+
+## Base images
+
+Each `img/Dockerfile.<lang>` names its base image with a version tag in `FROM` (no build args), so a local
+`docker build` gives the same image as CI. Dependabot opens one weekly PR (`base-images`) that bumps these
+tags; set the changed images to the release date in `tags.yaml` to release them, or close the PR to skip.
+`texlive/texlive:latest-small` has no versioned small tag and follows the current TeX Live.

@@ -1,15 +1,12 @@
-ARG PHP_VERSION=8.4
-
-FROM composer AS builder
-ARG PHP_VERSION
-# Resolve dependencies for the runtime PHP, not the PHP in the composer image.
+FROM composer:2.10.3 AS builder
+# Resolve dependencies for the runtime PHP, not the PHP in the composer image: keep in step with FROM php below.
 RUN set -eux \
-    && composer config --global platform.php ${PHP_VERSION} \
+    && composer config --global platform.php 8.4 \
     && composer require \
     simplehtmldom/simplehtmldom:2.0-RC2 \
     laravel/framework:^12.0
 
-FROM php:${PHP_VERSION}-cli
+FROM php:8.4-cli
 RUN set -eux \
     && useradd -m -d /home/user01 user01 \
     && apt-get update && apt-get install -y --no-install-recommends \

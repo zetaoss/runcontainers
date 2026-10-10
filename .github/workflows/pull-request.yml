@@ -7,10 +7,6 @@ permissions:
   contents: read
   packages: read
 
-env:
-  DEBIAN_TAG: 12.8-slim
-  NOTEBOOK_TAG: 2024-12-09
-
 jobs:
   plan:
     runs-on: ubuntu-24.04
@@ -56,6 +52,3 @@ jobs:
         push: false
         tags: ghcr.io/zetaoss/runcontainers/${{ matrix.lang }}:${{ matrix.tag }}
         labels: ${{ steps.meta.outputs.labels }}
-        build-args: |
-          DEBIAN_TAG=${{ env.DEBIAN_TAG }}
-          NOTEBOOK_TAG=${{ env.NOTEBOOK_TAG }}
