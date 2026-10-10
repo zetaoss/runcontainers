@@ -2,23 +2,36 @@
 
 ## Release
 
-`tags.yaml` lists the published tag of each image (`<lang>: <YYYY-MM-DD>`, UTC). The latest date in the
-file is the release: to release, change Dockerfiles in `img/` and set those images to today's date.
+The repository version (`v0.x.y`, semver) is the release, and every image is published at it.
+To release, push a tag: `git tag v0.2.0 && git push origin v0.2.0`.
 
-- On merge to main, images at the release date whose tag is not in the registry yet are built and pushed
-  as `ghcr.io/zetaoss/runcontainers/<lang>:<tag>` and `:latest` (`latex` also as `tex`).
-- Earlier entries are already published and are not touched. Tags are never rebuilt, so old tags stay
-  available for rollback.
-- Pull requests build the release and fail if a changed `img/Dockerfile.<lang>` is not in it.
-- If `tests/Dockerfile.<lang>` exists, it is built `FROM` the new image (`--build-arg IMAGE=...`) after the
-  build, in pull requests and before the push on merge; a failing `RUN` fails the release. Add a test when
-  you change an image.
+- patch: images change, but not as users see them (rebuild for security updates, base patch version, build fix).
+- minor: a change users see (language or base major/minor version, packages or data added or removed,
+  a new language, the `images.txt` format). Breaking changes are minor while in 0.x.
+- No release when no image changes (CI, README, `tests/` only).
 
-bob keeps a copy of `tags.yaml` and runs these tags; copy it there and release bob to use new images.
+The `release` workflow builds the images whose `img/Dockerfile.<lang>` or `tests/Dockerfile.<lang>` changed
+since the previous release and pushes them as `ghcr.io/zetaoss/runcontainers/<lang>:<version>` and `:latest`
+(`latex` also as `tex`), with build provenance (`gh attestation verify oci://<image> -R zetaoss/runcontainers`).
+Unchanged images get the new version tag on the same digest (no rebuild). The release gets `images.txt`,
+one image per line pinned by digest:
+
+```
+ghcr.io/zetaoss/runcontainers/bash:v0.2.0@sha256:...
+```
+
+Run the workflow on a release tag with `all` to rebuild every image. bob keeps a copy of `images.txt` and runs
+those digests; copy it there and release bob to use new images.
+
+## Tests
+
+If `tests/Dockerfile.<lang>` exists, it is built `FROM` the new image (`--build-arg IMAGE=...`) in pull requests
+and before the push in a release; a failing `RUN` fails the build. Add a test when you change an image.
+Pull requests build and test the changed images (every image when `.github/` changes).
 
 ## Base images
 
 Each `img/Dockerfile.<lang>` names its base image with a version tag in `FROM` (no build args), so a local
 `docker build` gives the same image as CI. Dependabot opens one weekly PR (`base-images`) that bumps these
-tags; set the changed images to the release date in `tags.yaml` to release them, or close the PR to skip.
+tags; merge it (with fixes and tests as needed) to include them in the next release, or close it to skip.
 `texlive/texlive:latest-small` has no versioned small tag and follows the current TeX Live.

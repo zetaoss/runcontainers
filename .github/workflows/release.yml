@@ -1,0 +1,161 @@
+name: release
+on:
+  push:
+    tags: ['v*']
+  # Run on a release tag ("Use workflow from") to rebuild it, e.g. with all for security updates.
+  workflow_dispatch:
+    inputs:
+      all:
+        description: Rebuild every image, not only the changed ones
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  REGISTRY: ghcr.io/zetaoss/runcontainers
+  TAG: ${{ github.ref_name }}
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      langs: ${{ steps.plan.outputs.langs }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - id: plan
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        [[ "$GITHUB_REF_TYPE" == tag ]] || { echo "error: run on a release tag" >&2; exit 1; }
+        # Images changed since the previous release; every image if it has no images.txt.
+        prev=$(git describe --tags --abbrev=0 --match 'v*' HEAD^ 2>/dev/null || true)
+        all=${{ inputs.all && '1' || '' }}
+        if [[ -z "$prev" ]] || ! gh release download "$prev" -p images.txt -O prev-images.txt; then all=1; fi
+        echo "langs=$(BASE=$prev PREV=prev-images.txt ALL=$all .github/plan.sh)" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: plan
+    if: needs.plan.outputs.langs != '[]'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    strategy:
+      fail-fast: false
+      matrix:
+        lang: ${{ fromJSON(needs.plan.outputs.langs) }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ matrix.lang }}
+        tags: |
+          type=raw,value=${{ env.TAG }}
+          type=raw,value=latest
+
+    - name: Build
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: img/Dockerfile.${{ matrix.lang }}
+        load: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+    - name: Test
+      if: hashFiles(format('tests/Dockerfile.{0}', matrix.lang)) != ''
+      run: docker build -f tests/Dockerfile.${{ matrix.lang }} --build-arg IMAGE=$REGISTRY/${{ matrix.lang }}:$TAG tests
+
+    - name: Push
+      id: push
+      env:
+        LANG_: ${{ matrix.lang }}
+      run: |
+        image=$REGISTRY/$LANG_
+        docker push --all-tags "$image"
+        digest=$(docker inspect --format '{{index .RepoDigests 0}}' "$image:$TAG" | cut -d@ -f2)
+        if [[ $LANG_ == latex ]]; then
+          docker buildx imagetools create -t "$REGISTRY/tex:$TAG" -t "$REGISTRY/tex:latest" "$image@$digest"
+        fi
+        echo "digest=$digest" >> "$GITHUB_OUTPUT"
+        mkdir out && echo "$image:$TAG@$digest" > "out/$LANG_.txt"
+
+    - uses: actions/attest-build-provenance@v2
+      with:
+        subject-name: ${{ env.REGISTRY }}/${{ matrix.lang }}
+        subject-digest: ${{ steps.push.outputs.digest }}
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: image-${{ matrix.lang }}
+        path: out/
+
+    - uses: actions/delete-package-versions@v5
+      with:
+        package-name: runcontainers/${{ matrix.lang }}
+        package-type: container
+        delete-only-untagged-versions: 'true'
+
+  # Tags the unchanged images of the previous release with this version and publishes images.txt.
+  release:
+    needs: [plan, build]
+    if: ${{ !failure() && !cancelled() }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      packages: write
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: image-*
+        merge-multiple: true
+        path: out
+
+    - name: Tag unchanged images and publish images.txt
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        mkdir -p out
+        prev=$(git describe --tags --abbrev=0 --match 'v*' HEAD^ 2>/dev/null || true)
+        [[ -z "$prev" ]] || gh release download "$prev" -p images.txt -O prev-images.txt || true
+        for f in img/Dockerfile.*; do
+          lang=${f#img/Dockerfile.}
+          [[ -f "out/$lang.txt" ]] && continue
+          digest=$(grep "^$REGISTRY/$lang:" prev-images.txt | cut -d@ -f2)
+          [[ -n "$digest" ]] || { echo "error $lang: not built and not in $prev images.txt" >&2; exit 1; }
+          echo "tag   $lang:$TAG = $prev $digest"
+          docker buildx imagetools create -t "$REGISTRY/$lang:$TAG" "$REGISTRY/$lang@$digest"
+          if [[ $lang == latex ]]; then docker buildx imagetools create -t "$REGISTRY/tex:$TAG" "$REGISTRY/$lang@$digest"; fi
+          echo "$REGISTRY/$lang:$TAG@$digest" > "out/$lang.txt"
+        done
+        cat out/*.txt | sort > images.txt
+        cat images.txt
+        if gh release view "$TAG" >/dev/null 2>&1; then
+          gh release upload "$TAG" images.txt --clobber
+        else
+          gh release create "$TAG" images.txt --verify-tag --generate-notes
+        fi
