@@ -1,27 +1,24 @@
 name: release
+# A merge that changes VERSION releases v<VERSION>. "[rebuild]" in the commit message (the PR title) rebuilds
+# every image, e.g. for security updates. Rerun failed jobs to retry a release.
 on:
   push:
-    tags: ['v*']
-  # Run on a release tag ("Use workflow from") to rebuild it, e.g. with all for security updates.
-  workflow_dispatch:
-    inputs:
-      all:
-        description: Rebuild every image, not only the changed ones
-        type: boolean
-        default: false
+    branches: [main]
+    paths: [VERSION]
 
 permissions:
   contents: read
 
 env:
   REGISTRY: ghcr.io/zetaoss/runcontainers
-  TAG: ${{ github.ref_name }}
 
 jobs:
   plan:
     runs-on: ubuntu-24.04
     outputs:
       langs: ${{ steps.plan.outputs.langs }}
+      tag: ${{ steps.plan.outputs.tag }}
+      prev: ${{ steps.plan.outputs.prev }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -29,11 +26,14 @@ jobs:
     - id: plan
       env:
         GH_TOKEN: ${{ github.token }}
+        MESSAGE: ${{ github.event.head_commit.message }}
       run: |
-        [[ "$GITHUB_REF_TYPE" == tag ]] || { echo "error: run on a release tag" >&2; exit 1; }
-        # Images changed since the previous release; every image if it has no images.txt.
-        prev=$(git describe --tags --abbrev=0 --match 'v*' HEAD^ 2>/dev/null || true)
-        all=${{ inputs.all && '1' || '' }}
+        tag=v$(cat VERSION)
+        prev=$(git describe --tags --abbrev=0 --match 'v*' --exclude "$tag" HEAD 2>/dev/null || true)
+        echo "tag=$tag" >> "$GITHUB_OUTPUT"
+        echo "prev=$prev" >> "$GITHUB_OUTPUT"
+        # Images changed since the previous release; every image with [rebuild] or if it has no images.txt.
+        all=; [[ "$MESSAGE" != *"[rebuild]"* ]] || all=1
         if [[ -z "$prev" ]] || ! gh release download "$prev" -p images.txt -O prev-images.txt; then all=1; fi
         echo "langs=$(BASE=$prev PREV=prev-images.txt ALL=$all .github/plan.sh)" >> "$GITHUB_OUTPUT"
 
@@ -46,6 +46,8 @@ jobs:
       packages: write
       id-token: write
       attestations: write
+    env:
+      TAG: ${{ needs.plan.outputs.tag }}
     strategy:
       fail-fast: false
       matrix:
@@ -118,10 +120,11 @@ jobs:
     permissions:
       contents: write
       packages: write
+    env:
+      TAG: ${{ needs.plan.outputs.tag }}
+      PREV: ${{ needs.plan.outputs.prev }}
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
 
     - uses: docker/login-action@v3
       with:
@@ -140,14 +143,13 @@ jobs:
         GH_TOKEN: ${{ github.token }}
       run: |
         mkdir -p out
-        prev=$(git describe --tags --abbrev=0 --match 'v*' HEAD^ 2>/dev/null || true)
-        [[ -z "$prev" ]] || gh release download "$prev" -p images.txt -O prev-images.txt || true
+        [[ -z "$PREV" ]] || gh release download "$PREV" -p images.txt -O prev-images.txt || true
         for f in img/Dockerfile.*; do
           lang=${f#img/Dockerfile.}
           [[ -f "out/$lang.txt" ]] && continue
           digest=$(grep "^$REGISTRY/$lang:" prev-images.txt | cut -d@ -f2)
-          [[ -n "$digest" ]] || { echo "error $lang: not built and not in $prev images.txt" >&2; exit 1; }
-          echo "tag   $lang:$TAG = $prev $digest"
+          [[ -n "$digest" ]] || { echo "error $lang: not built and not in $PREV images.txt" >&2; exit 1; }
+          echo "tag   $lang:$TAG = $PREV $digest"
           docker buildx imagetools create -t "$REGISTRY/$lang:$TAG" "$REGISTRY/$lang@$digest"
           if [[ $lang == latex ]]; then docker buildx imagetools create -t "$REGISTRY/tex:$TAG" "$REGISTRY/$lang@$digest"; fi
           echo "$REGISTRY/$lang:$TAG@$digest" > "out/$lang.txt"
@@ -157,5 +159,5 @@ jobs:
         if gh release view "$TAG" >/dev/null 2>&1; then
           gh release upload "$TAG" images.txt --clobber
         else
-          gh release create "$TAG" images.txt --verify-tag --generate-notes
+          gh release create "$TAG" images.txt --target "$GITHUB_SHA" --generate-notes
         fi

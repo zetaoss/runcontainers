@@ -2,8 +2,9 @@
 
 ## Release
 
-The repository version (`v0.x.y`, semver) is the release, and every image is published at it.
-To release, push a tag: `git tag v0.2.0 && git push origin v0.2.0`.
+`VERSION` holds the repository version (`0.x.y`, semver), and every image is published at it. To release,
+bump `VERSION` in a pull request; merging it runs the `release` workflow, which creates the `v<VERSION>` tag
+and GitHub release. Merges that leave `VERSION` alone go out with the next release.
 
 - patch: images change, but not as users see them (rebuild for security updates, base patch version, build fix).
 - minor: a change users see (language or base major/minor version, packages or data added or removed,
@@ -20,7 +21,7 @@ one image per line pinned by digest:
 ghcr.io/zetaoss/runcontainers/bash:v0.2.0@sha256:...
 ```
 
-Run the workflow on a release tag with `all` to rebuild every image. bob keeps a copy of `images.txt` and runs
+Put `[rebuild]` in the pull request title to rebuild every image (e.g. for security updates). bob keeps a copy of `images.txt` and runs
 those digests; copy it there and release bob to use new images.
 
 ## Tests

@@ -18,6 +18,13 @@ jobs:
       env:
         BASE: origin/${{ github.base_ref }}
       run: |
+        if ! git diff --quiet "$BASE"...HEAD -- VERSION; then
+          version=$(cat VERSION)
+          latest=$(git tag -l 'v*' --sort=-v:refname | head -1)
+          [[ "$version" =~ ^0\.[0-9]+\.[0-9]+$ ]] || { echo "error: VERSION $version is not 0.x.y" >&2; exit 1; }
+          [[ "$(printf '%s\n' "${latest#v}" "$version" | sort -V | tail -1)" == "$version" && "v$version" != "$latest" ]] \
+            || { echo "error: VERSION $version is not after $latest" >&2; exit 1; }
+        fi
         # A change to CI builds and tests every image.
         if git diff --quiet "$BASE"...HEAD -- .github; then all=; else all=1; fi
         echo "langs=$(ALL=$all .github/plan.sh)" >> "$GITHUB_OUTPUT"
