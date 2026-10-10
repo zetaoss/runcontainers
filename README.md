@@ -12,10 +12,11 @@ and GitHub release. Merges that leave `VERSION` alone go out with the next relea
 - No release when no image changes (CI, README, `tests/` only).
 
 The `release` workflow builds the images whose `img/Dockerfile.<lang>` or `tests/Dockerfile.<lang>` changed
-since the previous release and pushes them as `ghcr.io/zetaoss/runcontainers/<lang>:<version>` and `:latest`
+since the previous release and pushes them as `ghcr.io/zetaoss/runcontainers/<lang>:<version>`
 (`latex` also as `tex`), with build provenance (`gh attestation verify oci://<image> -R zetaoss/runcontainers`).
 Unchanged images get the new version tag on the same digest (no rebuild), so every release has all images:
-run `ghcr.io/zetaoss/runcontainers/<lang>:v<VERSION>`. Put `[rebuild]` in the pull request title to rebuild
+run `ghcr.io/zetaoss/runcontainers/<lang>:v<VERSION>`. When the release succeeds, `latest` of every image moves to
+it. Version tags are never deleted: an unchanged image's tag may share its manifest with earlier versions. Put `[rebuild]` in the pull request title to rebuild
 every image (e.g. for security updates). bob keeps the runcontainers version; set it there and release bob to
 use new images.
 
