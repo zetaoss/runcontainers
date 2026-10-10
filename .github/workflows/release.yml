@@ -70,7 +70,6 @@ jobs:
         images: ${{ env.REGISTRY }}/${{ matrix.lang }}
         tags: |
           type=raw,value=${{ env.TAG }}
-          type=raw,value=latest
 
     - name: Build
       uses: docker/build-push-action@v6
@@ -97,7 +96,6 @@ jobs:
         digest=$(docker inspect --format '{{index .RepoDigests 0}}' "$image:$TAG" | cut -d@ -f2)
         if [[ $LANG_ == latex ]]; then
           crane copy "$image@$digest" "$REGISTRY/tex:$TAG"
-          crane tag "$REGISTRY/tex:$TAG" latest
         fi
         echo "digest=$digest" >> "$GITHUB_OUTPUT"
 
@@ -150,3 +148,10 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --target "$GITHUB_SHA" --generate-notes
+
+    # latest moves only when the whole release succeeded, and for every image.
+    - name: Tag latest
+      run: |
+        for lang in $(ls img | sed 's/^Dockerfile\.//') tex; do
+          crane tag "$REGISTRY/$lang:$TAG" latest
+        done
