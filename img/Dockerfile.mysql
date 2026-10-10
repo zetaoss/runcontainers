@@ -1,5 +1,8 @@
 FROM mysql:9.7
 
+# A failed download in a curl | mysql pipeline must fail the build.
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 ENV MYSQL_ALLOW_EMPTY_PASSWORD=1 \
     PATH=/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
