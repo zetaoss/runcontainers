@@ -1,0 +1,6 @@
+ARG IMAGE
+FROM ${IMAGE}
+# bob runs a notebook as below and reads the executed notebook from stdout.
+RUN printf '%s' '{"metadata":{"kernelspec":{"name":"python3","display_name":""},"language_info":{"name":"python"}},"nbformat_minor":4,"nbformat":4,"cells":[{"cell_type":"code","metadata":{},"source":["import pandas, matplotlib; 1+1"],"outputs":[],"execution_count":0}]}' > /tmp/runbox.ipynb \
+    && cd /tmp && jupyter nbconvert --execute --to notebook --allow-errors --stdout /tmp/runbox.ipynb > /tmp/out.ipynb \
+    && python -c 'import json; o = json.load(open("/tmp/out.ipynb"))["cells"][0]["outputs"]; print(o); assert "2" in o[0]["data"]["text/plain"], o'
