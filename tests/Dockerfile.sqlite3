@@ -1,0 +1,4 @@
+ARG IMAGE
+FROM ${IMAGE}
+# .sqliterc opens the Northwind database.
+RUN test "$(echo 'select count(*) > 0 from Orders;' | sqlite3 -batch -cmd '.mode list')" = 1

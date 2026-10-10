@@ -48,18 +48,27 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
 
-    - name: Build and push
+    - name: Build
       uses: docker/build-push-action@v6
       with:
         context: .
         file: img/Dockerfile.${{ matrix.lang }}
-        push: true
+        load: true
         tags: |
           ghcr.io/zetaoss/runcontainers/${{ matrix.lang }}:${{ matrix.tag }}
           ghcr.io/zetaoss/runcontainers/${{ matrix.lang }}:latest
           ${{ matrix.lang == 'latex' && format('ghcr.io/zetaoss/runcontainers/tex:{0}', matrix.tag) || '' }}
           ${{ matrix.lang == 'latex' && 'ghcr.io/zetaoss/runcontainers/tex:latest' || '' }}
         labels: ${{ steps.meta.outputs.labels }}
+
+    - name: Test
+      if: hashFiles(format('tests/Dockerfile.{0}', matrix.lang)) != ''
+      run: docker build -f tests/Dockerfile.${{ matrix.lang }} --build-arg IMAGE=ghcr.io/zetaoss/runcontainers/${{ matrix.lang }}:${{ matrix.tag }} tests
+
+    - name: Push
+      run: |
+        docker push --all-tags ghcr.io/zetaoss/runcontainers/${{ matrix.lang }}
+        if [[ ${{ matrix.lang }} == latex ]]; then docker push --all-tags ghcr.io/zetaoss/runcontainers/tex; fi
 
     - uses: actions/delete-package-versions@v5
       with:

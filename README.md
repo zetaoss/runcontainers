@@ -10,6 +10,9 @@ file is the release: to release, change Dockerfiles in `img/` and set those imag
 - Earlier entries are already published and are not touched. Tags are never rebuilt, so old tags stay
   available for rollback.
 - Pull requests build the release and fail if a changed `img/Dockerfile.<lang>` is not in it.
+- If `tests/Dockerfile.<lang>` exists, it is built `FROM` the new image (`--build-arg IMAGE=...`) after the
+  build, in pull requests and before the push on merge; a failing `RUN` fails the release. Add a test when
+  you change an image.
 
 bob keeps a copy of `tags.yaml` and runs these tags; copy it there and release bob to use new images.
 

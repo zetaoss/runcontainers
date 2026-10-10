@@ -9,10 +9,10 @@ RUN set -eux \
     sqlite3 \
     time \
     && cd /home/user01/ \
-    && curl -o Northwind_small.sqlite -L 'https://github.com/jpwhite3/northwind-SQLite3/raw/master/Northwind_small.sqlite' \
+    && curl -fsSL -o northwind.db https://raw.githubusercontent.com/jpwhite3/northwind-SQLite3/4f56e7f5906dfd23b25244c5bfe8fb5da6402efd/dist/northwind.db \
     && rm -rf /var/lib/apt/lists/* \
     && echo '.mode table' >> .sqliterc \
-    && echo '.open Northwind_small.sqlite' >> .sqliterc
+    && echo '.open northwind.db' >> .sqliterc
 
 USER user01
 WORKDIR /home/user01/

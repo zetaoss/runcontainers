@@ -49,6 +49,10 @@ jobs:
       with:
         context: .
         file: img/Dockerfile.${{ matrix.lang }}
-        push: false
+        load: true
         tags: ghcr.io/zetaoss/runcontainers/${{ matrix.lang }}:${{ matrix.tag }}
         labels: ${{ steps.meta.outputs.labels }}
+
+    - name: Test
+      if: hashFiles(format('tests/Dockerfile.{0}', matrix.lang)) != ''
+      run: docker build -f tests/Dockerfile.${{ matrix.lang }} --build-arg IMAGE=ghcr.io/zetaoss/runcontainers/${{ matrix.lang }}:${{ matrix.tag }} tests
