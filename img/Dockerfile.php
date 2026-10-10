@@ -6,7 +6,7 @@ RUN set -eux \
     simplehtmldom/simplehtmldom:2.0-RC2 \
     laravel/framework:^12.0
 
-FROM php:8.4-cli
+FROM php:8.5-cli
 RUN set -eux \
     && useradd -m -d /home/user01 user01 \
     && apt-get update && apt-get install -y --no-install-recommends \

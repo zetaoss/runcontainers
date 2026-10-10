@@ -1,4 +1,4 @@
-FROM perl:5.40-slim
+FROM perl:5.43-slim
 
 RUN useradd -m -d /home/user01 user01 \
     && apt-get update && apt-get install -y --no-install-recommends \
