@@ -85,6 +85,8 @@ jobs:
       if: hashFiles(format('tests/Dockerfile.{0}', matrix.lang)) != ''
       run: docker build -f tests/Dockerfile.${{ matrix.lang }} --build-arg IMAGE=$REGISTRY/${{ matrix.lang }}:$TAG tests
 
+    - uses: imjasonh/setup-crane@v0.7
+
     - name: Push
       id: push
       env:
@@ -94,7 +96,8 @@ jobs:
         docker push --all-tags "$image"
         digest=$(docker inspect --format '{{index .RepoDigests 0}}' "$image:$TAG" | cut -d@ -f2)
         if [[ $LANG_ == latex ]]; then
-          docker buildx imagetools create -t "$REGISTRY/tex:$TAG" -t "$REGISTRY/tex:latest" "$image@$digest"
+          crane copy "$image@$digest" "$REGISTRY/tex:$TAG"
+          crane tag "$REGISTRY/tex:$TAG" latest
         fi
         echo "digest=$digest" >> "$GITHUB_OUTPUT"
 
@@ -130,14 +133,17 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
+    - uses: imjasonh/setup-crane@v0.7
+
+    # crane tag puts the same manifest under the new tag (same digest); imagetools create would wrap it in an index.
     - name: Tag unchanged images
       run: |
         for f in img/Dockerfile.*; do
           lang=${f#img/Dockerfile.}
           jq -e --arg l "$lang" 'index($l)' <<<"$LANGS" >/dev/null && continue
           echo "tag $lang:$PREV -> $TAG"
-          docker buildx imagetools create -t "$REGISTRY/$lang:$TAG" "$REGISTRY/$lang:$PREV"
-          if [[ $lang == latex ]]; then docker buildx imagetools create -t "$REGISTRY/tex:$TAG" "$REGISTRY/$lang:$PREV"; fi
+          crane tag "$REGISTRY/$lang:$PREV" "$TAG"
+          if [[ $lang == latex ]]; then crane tag "$REGISTRY/tex:$PREV" "$TAG"; fi
         done
 
     - name: Create release
