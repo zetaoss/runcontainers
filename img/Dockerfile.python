@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.14-slim
 RUN set -eux \
     && useradd -m -d /home/user01 user01 \
     && apt-get update && apt-get install -y --no-install-recommends time \
