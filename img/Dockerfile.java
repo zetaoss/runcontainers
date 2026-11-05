@@ -1,4 +1,4 @@
-FROM gradle:9.8.1-jdk21-resolute AS gradle
+FROM gradle:9.8.2-jdk21-resolute AS gradle
 RUN set -eux \
     && useradd -m -d /home/user01 user01 \
     && apt-get update && apt-get install -y --no-install-recommends \
