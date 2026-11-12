@@ -1,4 +1,4 @@
-FROM composer:2.10.3 AS builder
+FROM composer:2.11.0 AS builder
 # Resolve dependencies for the runtime PHP, not the PHP in the composer image: keep in step with FROM php below.
 RUN set -eux \
     && composer config --global platform.php 8.5 \
