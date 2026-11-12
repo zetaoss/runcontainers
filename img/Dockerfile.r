@@ -1,4 +1,4 @@
-FROM r-base:4.6.1
+FROM r-base:4.6.2
 RUN set -eux \
     && useradd -m -d /home/user01 --system --groups staff user01 \
     && apt-get update && apt-get install -y \
